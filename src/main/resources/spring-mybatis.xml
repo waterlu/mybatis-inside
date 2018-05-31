@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!-- 载入常用的配置 -->
+    <context:property-placeholder location="classpath:db.properties,classpath:druid.properties"/>
+
+    <!-- 注解扫描所有包 -->
+    <context:component-scan base-package="cn.lu.mybatis.mapper.*"/>
+
+    <context:annotation-config/>
+
+    <!-- 扫描缓存注解 -->
+    <cache:annotation-driven/>
+
+    <!-- 数据源 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!-- 数据库连接 -->
+        <property name="driverClassName" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+
+        <!-- Druid连接池 -->
+        <property name="initialSize" value="${druid.initialSize}"/>
+        <property name="minIdle" value="${druid.minIdle}"/>
+        <property name="maxActive" value="${druid.maxActive}"/>
+        <property name="maxWait" value="${druid.maxWait}"/>
+        <property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}"/>
+        <property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}"/>
+        <property name="validationQuery" value="${druid.validationQuery}"/>
+        <property name="testWhileIdle" value="${druid.testWhileIdle}"/>
+        <property name="testOnBorrow" value="${druid.testOnBorrow}"/>
+        <property name="testOnReturn" value="${druid.testOnReturn}"/>
+    </bean>
+
+    <!-- 取代mybatis_config -->
+    <!-- protected SqlSessionFactory buildSqlSessionFactory() throws IOException {} -->
+    <!-- 创建SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
+        <!-- 使用xml配置，自动扫描mapping.xml文件 -->
+        <property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"></property>
+
+        <property name="typeAliasesPackage" value="cn.lu.mybatis.entity"/>
+    </bean>
+
+    <!-- 方法一：非注解使用方式，需要自己手工定义每一个Mapper -->
+     UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+    <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" >
+        <property name="mapperInterface" value="cn.lu.learn.mapper.UserMapper" />
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+
+    <!-- 方法二：自动扫描，取代手工配置 -->
+    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
+        <!--&lt;!&ndash; 自动扫描的位置 &ndash;&gt;-->
+        <!--<property name="basePackage" value="cn.lu.learn.mapper"/>-->
+        <!--&lt;!&ndash; 自动扫描的注解 &ndash;&gt;-->
+        <!--<property name="annotationClass" value="org.springframework.stereotype.Repository" />-->
+        <!--&lt;!&ndash; sqlSessionFactory &ndash;&gt;-->
+        <!--<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />-->
+    <!--</bean>-->
+
+
+</beans>
