@@ -4,9 +4,14 @@ import cn.lu.mybatis.annotation.LedgerDataId;
 
 import java.util.Date;
 
+/**
+ *
+ * @author lu
+ * @date 2018-10-23
+ */
 public class User {
 
-    @LedgerDataId
+    @LedgerDataId(className = "cn.lu.mybatis.entity.User")
     private Long userId;
 
     private Integer userStatus;

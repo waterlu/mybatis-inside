@@ -20,9 +20,9 @@
     <!-- 数据源 -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-        <property name="url" value="jdbc:mysql://192.168.75.159:3306/bookshop_user" />
-        <property name="username" value="zj_admin" />
-        <property name="password" value="123456" />
+        <property name="url" value="jdbc:mysql://localhost:3306/oneconnect?useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false" />
+        <property name="username" value="lu" />
+        <property name="password" value="123" />
 
         <property name="initialSize" value="3"/>
         <property name="minIdle" value="3"/>
@@ -38,24 +38,29 @@
         <!-- 使用xml配置，自动扫描mapping.xml文件 -->
         <property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"></property>
 
+        <property name="plugins">
+            <array>
+                <bean class="cn.lu.mybatis.plugin.BlockChainInterceptor" />
+            </array>
+        </property>
         <!--<property name="typeAliasesPackage" value="cn.lu.mybatis.entity"/>-->
     </bean>
 
     <!-- 方法一：非注解使用方式，需要自己手工定义每一个Mapper -->
-    <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" >
-        <property name="mapperInterface" value="cn.lu.mybatis.mapper.UserMapper" />
-        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
-    </bean>
+    <!--<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" >-->
+        <!--<property name="mapperInterface" value="cn.lu.mybatis.mapper.UserMapper" />-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory" />-->
+    <!--</bean>-->
 
     <!-- 方法二：自动扫描，取代手工配置 -->
-    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">-->
-        <!--&lt;!&ndash; 自动扫描的位置 &ndash;&gt;-->
-        <!--<property name="basePackage" value="cn.lu.learn.mapper"/>-->
-        <!--&lt;!&ndash; 自动扫描的注解 &ndash;&gt;-->
-        <!--<property name="annotationClass" value="org.springframework.stereotype.Repository" />-->
-        <!--&lt;!&ndash; sqlSessionFactory &ndash;&gt;-->
-        <!--<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />-->
-    <!--</bean>-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 自动扫描的位置 -->
+        <property name="basePackage" value="cn.lu.mybatis.mapper"/>
+        <!-- 自动扫描的注解 -->
+        <property name="annotationClass" value="org.springframework.stereotype.Repository" />
+        <!-- sqlSessionFactory -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+    </bean>
 
 
 </beans>

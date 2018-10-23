@@ -2,6 +2,8 @@ package cn.lu.mybatis.plugin;
 
 import cn.lu.mybatis.annotation.LedgerDataId;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -20,8 +22,7 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Intercepts(value = {
         @Signature(type= Executor.class,
@@ -147,9 +148,12 @@ public class BlockChainInterceptor implements Interceptor {
         String jsonString = JSON.toJSONString(result);
         List list = JSON.parseArray(jsonString, resultClass);
 
+        List resultList = new ArrayList();
+
         for (Object object : list) {
             // 解析DATA_ID属性
             String dataId = null;
+            String ledegerClassName = null;
             Class clazz = Class.forName(resultClass.getName());
             Field[] fieldList = clazz.getDeclaredFields();
             for (int i=0; i<fieldList.length; i++) {
@@ -163,7 +167,9 @@ public class BlockChainInterceptor implements Interceptor {
                 }
                 // 检查成员变量是否声明了@LedgerDataId注解
                 if (field.isAnnotationPresent(LedgerDataId.class)) {
+                    LedgerDataId annotation = field.getAnnotation(LedgerDataId.class);
                     dataId = value.toString();
+                    ledegerClassName = annotation.className();
                     break;
                 }
             }
@@ -174,17 +180,28 @@ public class BlockChainInterceptor implements Interceptor {
                 // 拼接key
                 String key = resultClass.getName();
                 key = key.replace(".", ":");
+                key += ":";
                 key += dataId;
 
                 // 读取json内容
                 String value = redisClient.get(key);
 
                 // 解析json内容
+                Map<String, String> chainData = JSON.parseObject(value, new TypeReference<HashMap<String, String>>() {});
+                String str = JSON.toJSONString(object);
+                Map<String, String> localData = JSON.parseObject(str, new TypeReference<HashMap<String, String>>() {});
 
+                Map<String, String> unionData = new HashMap<>();
+                unionData.putAll(localData);
+                unionData.putAll(chainData);
+
+                String unionJsonString = JSON.toJSONString(unionData);
+                Object resultObject = JSON.parseObject(unionJsonString, resultClass);
+                resultList.add(resultObject);
             }
         }
 
-        return result;
+        return resultList;
     }
 
     @Override

@@ -9,4 +9,11 @@ import java.lang.annotation.*;
 @Documented
 @Component
 public @interface LedgerDataId {
+
+    /**
+     * 对应实体类名
+     *
+     * @return
+     */
+    String className() default "";
 }

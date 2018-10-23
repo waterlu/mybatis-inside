@@ -31,20 +31,13 @@ public class MybatisTests {
 
     private SqlSessionFactory sqlSessionFactory;
 
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
     @Test
     public void testSetData() {
         SqlSession sqlSession = null;
         try {
             sqlSession = getSqlSessionFactory().openSession();
             UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-            long userId = 100004L;
-            User user = userMapper.queryById(userId);
-            String key = "cn:lu:mybatis:entity:User:" + userId;
-            String value = JSON.toJSONString(user);
-            redisTemplate.opsForValue().set(key, value);
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
