@@ -7,35 +7,26 @@
 	    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
     <!-- 载入常用的配置 -->
-    <context:property-placeholder location="classpath:db.properties,classpath:druid.properties"/>
+    <!--<context:property-placeholder location="classpath:db.properties,classpath:druid.properties"/>-->
 
-    <!-- 注解扫描所有包 -->
-    <context:component-scan base-package="cn.lu.mybatis.mapper.*"/>
+    <!--&lt;!&ndash; 注解扫描所有包 &ndash;&gt;-->
+    <!--<context:component-scan base-package="cn.lu.mybatis.mapper.*"/>-->
 
-    <context:annotation-config/>
+    <!--<context:annotation-config/>-->
 
-    <!-- 扫描缓存注解 -->
-    <cache:annotation-driven/>
+    <!--&lt;!&ndash; 扫描缓存注解 &ndash;&gt;-->
+    <!--<cache:annotation-driven/>-->
 
     <!-- 数据源 -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
-        <!-- 数据库连接 -->
-        <property name="driverClassName" value="${driver}"/>
-        <property name="url" value="${url}"/>
-        <property name="username" value="${username}"/>
-        <property name="password" value="${password}"/>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://192.168.75.159:3306/bookshop_user" />
+        <property name="username" value="zj_admin" />
+        <property name="password" value="123456" />
 
-        <!-- Druid连接池 -->
-        <property name="initialSize" value="${druid.initialSize}"/>
-        <property name="minIdle" value="${druid.minIdle}"/>
-        <property name="maxActive" value="${druid.maxActive}"/>
-        <property name="maxWait" value="${druid.maxWait}"/>
-        <property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}"/>
-        <property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}"/>
-        <property name="validationQuery" value="${druid.validationQuery}"/>
-        <property name="testWhileIdle" value="${druid.testWhileIdle}"/>
-        <property name="testOnBorrow" value="${druid.testOnBorrow}"/>
-        <property name="testOnReturn" value="${druid.testOnReturn}"/>
+        <property name="initialSize" value="3"/>
+        <property name="minIdle" value="3"/>
+        <property name="maxActive" value="20"/>
     </bean>
 
     <!-- 取代mybatis_config -->
@@ -47,13 +38,12 @@
         <!-- 使用xml配置，自动扫描mapping.xml文件 -->
         <property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"></property>
 
-        <property name="typeAliasesPackage" value="cn.lu.mybatis.entity"/>
+        <!--<property name="typeAliasesPackage" value="cn.lu.mybatis.entity"/>-->
     </bean>
 
     <!-- 方法一：非注解使用方式，需要自己手工定义每一个Mapper -->
-     UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
     <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean" >
-        <property name="mapperInterface" value="cn.lu.learn.mapper.UserMapper" />
+        <property name="mapperInterface" value="cn.lu.mybatis.mapper.UserMapper" />
         <property name="sqlSessionFactory" ref="sqlSessionFactory" />
     </bean>
 

@@ -2,6 +2,7 @@ package cn.lu.mybatis;
 
 import cn.lu.mybatis.entity.User;
 import cn.lu.mybatis.mapper.UserMapper;
+import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,9 +12,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author lu
@@ -26,6 +31,29 @@ public class MybatisTests {
 
     private SqlSessionFactory sqlSessionFactory;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Test
+    public void testSetData() {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSqlSessionFactory().openSession();
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            long userId = 100004L;
+            User user = userMapper.queryById(userId);
+            String key = "cn:lu:mybatis:entity:User:" + userId;
+            String value = JSON.toJSONString(user);
+            redisTemplate.opsForValue().set(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (null != sqlSession) {
+                sqlSession.close();
+            }
+        }
+    }
+
     @Test
     public void testMybatisConfig() {
         SqlSession sqlSession = null;
@@ -37,16 +65,25 @@ public class MybatisTests {
             User user = null;
 
             // 第一种方法，SqlSession的Configuration中，Map的Key有全称和简称两种，"queryById"和"cn.lu.mybatis.mapper.UserMapper.queryById"都缓存了
-            user = sqlSession.selectOne("queryById", 100001L);
+//            user = sqlSession.selectOne("queryById", 100001L);
 
 //            // 第二种方法，MappedStatement ms = this.configuration.getMappedStatement(statement);
 //            user = sqlSession.selectOne("cn.lu.mybatis.mapper.UserMapper.queryById", 100001L);
 
 //            // 常用方法
-//            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+
+
 //            user = userMapper.queryById(100001L);
 
-            logger.info(user.getUserName());
+            List<User> userList = userMapper.queryByStatus(1);
+
+            assert userList.size() == 3;
+
+//            userMapper = sqlSession.getMapper(UserMapper.class);
+//            user = userMapper.queryById(100002L);
+
+//            logger.info(user.getUserName());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -77,5 +114,10 @@ public class MybatisTests {
         }
 
         return sqlSessionFactory;
+    }
+
+    @Test
+    public void testSpringMybatisConfig() {
+
     }
 }

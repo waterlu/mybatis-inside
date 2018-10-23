@@ -1,9 +1,12 @@
 package cn.lu.mybatis.entity;
 
+import cn.lu.mybatis.annotation.LedgerDataId;
+
 import java.util.Date;
 
 public class User {
 
+    @LedgerDataId
     private Long userId;
 
     private Integer userStatus;

@@ -24,4 +24,10 @@
     WHERE user_id = #{userId}
   </select>
 
+  <select id="queryByStatus" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    SELECT user_id, user_status, user_mobile, user_email, user_name, user_gender, user_birthday, user_id_card, user_login_name
+    FROM `user`
+    WHERE user_status = #{userStatus}
+  </select>
+
 </mapper>
