@@ -5,6 +5,8 @@ import cn.lu.mybatis.mapper.UserMapper;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,15 +22,17 @@ import java.util.List;
 @ContextConfiguration(locations = {"classpath:spring-mybatis.xml", "classpath:spring-redis.xml"})
 public class SpringMybatisTests {
 
+    private final Logger logger = LoggerFactory.getLogger(SpringMybatisTests.class);
+
     @Autowired
     UserMapper userMapper;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @Test
+//    @Test
     public void testSetData() {
-        long userId = 100004L;
+        long userId = 100002L;
         User user = userMapper.queryById(userId);
         String key = "cn:lu:mybatis:entity:User:" + userId;
         String value = JSON.toJSONString(user);
@@ -38,7 +42,7 @@ public class SpringMybatisTests {
 
     @Test
     public void testQueryData() {
-        List<User> userList = userMapper.queryByStatus(0);
-        assert userList.size() == 1;
+        List<User> userList = userMapper.queryByStatus(1);
+        logger.info(userList.toString());
     }
 }

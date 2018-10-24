@@ -1,9 +1,22 @@
 package cn.lu.mybatis.plugin;
 
 import cn.lu.mybatis.annotation.LedgerDataId;
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
+import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.impetus.blkch.BlkchnErrorListener;
+import com.impetus.blkch.sql.generated.BlkchnSqlLexer;
+import com.impetus.blkch.sql.generated.BlkchnSqlParser;
+import com.impetus.blkch.sql.parser.AbstractSyntaxTreeVisitor;
+import com.impetus.blkch.sql.parser.BlockchainVisitor;
+import com.impetus.blkch.sql.parser.CaseInsensitiveCharStream;
+import com.impetus.blkch.sql.parser.LogicalPlan;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -109,6 +122,19 @@ public class BlockChainInterceptor implements Interceptor {
         id += "-fabric";
 
         // 拼接新的SQL语句
+        LogicalPlan logicalPlan = getLogicalPlan(boundSql.getSql());
+
+        SQLStatementParser sqlStatementParser = new SQLStatementParser(boundSql.getSql());
+        SQLStatement sqlStatement = sqlStatementParser.parseStatement();
+//        MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
+//        sqlStatement.accept(visitor);
+//        SQLUtils.parseStatements();
+
+        StringBuilder out = new StringBuilder();
+        MySqlOutputVisitor visitor = new MySqlOutputVisitor(out);
+        sqlStatement.accept(visitor);
+
+        //
         String sql = "select user_id from user WHERE user_status = #{userStatus}";
         RawSqlSource sqlSource  = new RawSqlSource(configuration, sql, parameter.getClass());
 
@@ -186,6 +212,12 @@ public class BlockChainInterceptor implements Interceptor {
                 // 读取json内容
                 String value = redisClient.get(key);
 
+                if (null == value) {
+                    // 链上读取数据失败
+                    resultList.add(object);
+                    continue;
+                }
+
                 // 解析json内容
                 Map<String, String> chainData = JSON.parseObject(value, new TypeReference<HashMap<String, String>>() {});
                 String str = JSON.toJSONString(object);
@@ -202,6 +234,18 @@ public class BlockChainInterceptor implements Interceptor {
         }
 
         return resultList;
+    }
+
+    private LogicalPlan getLogicalPlan(String query) {
+        BlkchnSqlLexer lexer = new BlkchnSqlLexer(new CaseInsensitiveCharStream(query));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(BlkchnErrorListener.INSTANCE);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        BlkchnSqlParser parser = new BlkchnSqlParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(BlkchnErrorListener.INSTANCE);
+        AbstractSyntaxTreeVisitor visitor = new BlockchainVisitor();
+        return visitor.visitSingleStatement(parser.singleStatement());
     }
 
     @Override

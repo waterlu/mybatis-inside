@@ -1,5 +1,6 @@
 package cn.lu.mybatis.entity;
 
+import cn.lu.mybatis.annotation.LedgerData;
 import cn.lu.mybatis.annotation.LedgerDataId;
 
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.Date;
  * @author lu
  * @date 2018-10-23
  */
+@LedgerData(tableName = "user")
 public class User {
 
     @LedgerDataId(className = "cn.lu.mybatis.entity.User")

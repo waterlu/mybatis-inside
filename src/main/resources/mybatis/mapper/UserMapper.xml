@@ -30,4 +30,13 @@
     WHERE user_status = #{userStatus}
   </select>
 
+  <insert id="insertData" parameterType="cn.lu.mybatis.entity.User">
+    insert into `user` (user_mobile, user_email, user_name, user_birthday, user_id_card, user_login_name)
+    values (#{userMobile}, #{userEmail}, #{userName}, #{userBirthday}, #{userIdCard}, #{userLoginName})
+  </insert>
+
+  <update id="updateUserNameById" parameterType="cn.lu.mybatis.entity.User">
+    update `user` set user_name = #{userName}
+    where user_id = #{userId}
+  </update>
 </mapper>

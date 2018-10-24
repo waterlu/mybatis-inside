@@ -43,6 +43,7 @@
                 <bean class="cn.lu.mybatis.plugin.BlockChainInterceptor" />
             </array>
         </property>
+
         <!--<property name="typeAliasesPackage" value="cn.lu.mybatis.entity"/>-->
     </bean>
 
